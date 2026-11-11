@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clothing | Hb Market</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f8f8f8;
+    color: #222;
+}
+
+header {
+    background: #111;
+    color: white;
+    padding: 20px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: #e5b83e;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+header a {
+    color: white;
+    text-decoration: none;
+}
+
+.hero {
+    background:
+    linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),
+    url("https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1400");
+
+    background-size: cover;
+    background-position: center;
+    padding: 90px 20px;
+    text-align: center;
+    color: white;
+}
+
+.hero h1 {
+    font-size: 42px;
+    margin-bottom: 12px;
+}
+
+.container {
+    padding: 40px 6%;
+}
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 20px;
+}
+
+.product {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px #ddd;
+}
+
+.product img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: #eee;
+}
+
+.product-info {
+    padding: 15px;
+}
+
+.price {
+    color: #a77b12;
+    font-weight: bold;
+    margin: 10px 0;
+    font-size: 19px;
+}
+
+.description {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 10px 0;
+}
+
+.seller {
+    font-size: 13px;
+    margin-bottom: 12px;
+    color: #555;
+}
+
+.whatsapp-button {
+    display: block;
+    background: #168c43;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    padding: 12px;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-top: 12px;
+}
+
+.share-button {
+    width: 100%;
+    background: #111;
+    color: #e5b83e;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    margin-top: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.message {
+    text-align: center;
+    padding: 30px;
+    grid-column: 1 / -1;
+    line-height: 1.6;
+}
+
+footer {
+    background: #111;
+    color: white;
+    text-align: center;
+    padding: 25px;
+    margin-top: 40px;
+}
+
+@media(max-width:600px) {
+    .hero h1 {
+        font-size: 32px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">HB MARKET.</div>
+    <a href="index.html">Home</a>
+</header>
+
+<section class="hero">
+    <h1>Fashion & Clothing</h1>
+    <p>Discover clothing from different sellers.</p>
+</section>
+
+<section class="container">
+
+    <h2>Clothing Products</h2>
+    <br>
+
+    <div class="products" id="productList">
+        <div class="message">Loading clothing products...</div>
+    </div>
+
+</section>
+
+<footer>
+    Hb Market | Powered by Hb Tech
+</footer>
+
+<script type="module">
+
+import { createClient } from
+"https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL =
+"https://bwiuaovtrrsgoewrnkkp.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_T1HPez6suVsszTQ3b7Tjvw_DM464C3R".trim();
+
+const supabase = createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+const list = document.getElementById("productList");
+
+async function displayProducts() {
+
+    list.innerHTML =
+        '<div class="message">Loading clothing products...</div>';
+
+    try {
+
+        const { data, error } = await supabase
+            .from("products")
+            .select(`
+                id,
+                seller_name,
+                whatsapp,
+                name,
+                category,
+                description,
+                price,
+                image_url,
+                status,
+                created_at
+            `)
+            .eq("status", "published")
+            .ilike("category", "Clothing")
+            .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        list.innerHTML = "";
+
+        if (!data || data.length === 0) {
+
+            list.innerHTML =
+                '<div class="message">No clothing products available yet.</div>';
+
+            return;
+        }
+
+        data.forEach(product => {
+
+            const card = document.createElement("div");
+            card.className = "product";
+
+            const img = document.createElement("img");
+            img.src = product.image_url || "";
+            img.alt = product.name || "Clothing product";
+            img.loading = "lazy";
+
+            img.onerror = function() {
+                this.style.display = "none";
+            };
+
+            const info = document.createElement("div");
+            info.className = "product-info";
+
+            const name = document.createElement("h3");
+            name.textContent = product.name || "Unnamed product";
+
+            const price = document.createElement("p");
+            price.className = "price";
+            price.textContent =
+                "₦" + Number(product.price || 0).toLocaleString("en-NG");
+
+            const description = document.createElement("p");
+            description.className = "description";
+            description.textContent =
+                product.description || "Contact seller for details.";
+
+            const seller = document.createElement("p");
+            seller.className = "seller";
+            seller.textContent =
+                "Seller: " + (product.seller_name || "Hb Market seller");
+
+            const phone = String(product.whatsapp || "")
+                .replace(/\D/g, "");
+
+            const whatsapp = document.createElement("a");
+
+            whatsapp.className = "whatsapp-button";
+            whatsapp.textContent = phone
+                ? "Contact Seller on WhatsApp"
+                : "Seller contact unavailable";
+
+            whatsapp.href = phone
+                ? "https://wa.me/" + phone +
+                  "?text=" + encodeURIComponent(
+                      "Hello, I saw " + product.name +
+                      " on Hb Market. Is it available?"
+                  )
+                : "#";
+
+            whatsapp.target = "_blank";
+            whatsapp.rel = "noopener noreferrer";
+
+            const share = document.createElement("button");
+            share.className = "share-button";
+            share.textContent = "Share Product";
+
+            share.addEventListener("click", async () => {
+
+                const url = window.location.origin +
+                    window.location.pathname +
+                    "?product=" + encodeURIComponent(product.id);
+
+                const shareData = {
+                    title: product.name,
+                    text: product.name + " - Hb Market",
+                    url: url
+                };
+
+                try {
+
+                    if (navigator.share) {
+                        await navigator.share(shareData);
+
+                    } else {
+                        await navigator.clipboard.writeText(url);
+                        alert("Product link copied!");
+                    }
+
+                } catch (err) {
+
+                    if (err.name !== "AbortError") {
+                        alert("Could not share product.");
+                    }
+
+                }
+
+            });
+
+            info.append(
+                name,
+                price,
+                description,
+                seller,
+                whatsapp,
+                share
+            );
+
+            card.append(img, info);
+            list.appendChild(card);
+
+        });
+
+    } catch (error) {
+
+        console.error("Clothing loading error:", error);
+
+        list.innerHTML =
+            '<div class="message">Could not load clothing products. Please check your Supabase connection.</div>';
+
+    }
+
+}
+
+displayProducts();
+
+</script>
+
+</body>
+</html>

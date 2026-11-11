@@ -1,0 +1,949 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premium Seller Dashboard - Hb Market</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(120deg,#d4af37,#fff0a6,#e6b800,#f5f5dc,#d4af37);
+    background-size: 400% 400%;
+    animation: goldMove 12s ease infinite;
+    color: #222;
+}
+
+@keyframes goldMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+header {
+    background: #111;
+    color: #d4af37;
+    text-align: center;
+    padding: 20px;
+    border-bottom: 4px solid #000;
+}
+
+header h2 { margin: 0; }
+
+.container {
+    max-width: 650px;
+    margin: 25px auto;
+    padding: 20px;
+}
+
+.card, .posted-box {
+    background: rgba(255,255,255,0.95);
+    padding: 22px;
+    border: 2px solid #000;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #0002;
+    margin-bottom: 20px;
+}
+
+.dashboard-box {
+    background: #111;
+    color: #d4af37;
+    text-align: center;
+    padding: 22px;
+    border: 2px solid #000;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.count {
+    font-size: 38px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 13px;
+    margin-top: 7px;
+    border: 2px solid #000;
+    border-radius: 7px;
+    font-size: 15px;
+    background: white;
+}
+
+textarea { min-height: 100px; }
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 20px;
+    border: 2px solid #000;
+    border-radius: 7px;
+    background: #111;
+    color: #d4af37;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #d4af37;
+    color: #111;
+}
+
+button:disabled {
+    background: #999;
+    color: white;
+    cursor: not-allowed;
+}
+
+#preview {
+    width: 100%;
+    max-height: 250px;
+    object-fit: cover;
+    margin-top: 15px;
+    border: 2px solid #000;
+    border-radius: 10px;
+    display: none;
+}
+
+.note {
+    background: #fff4d6;
+    padding: 12px;
+    border: 2px solid #000;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.status {
+    padding: 14px;
+    border: 2px solid #000;
+    border-radius: 8px;
+    background: #fff4d6;
+    line-height: 1.5;
+    margin-top: 12px;
+    overflow-wrap: anywhere;
+}
+
+.hidden { display: none; }
+
+.back {
+    display: inline-block;
+    margin-top: 18px;
+    color: #111;
+    font-weight: bold;
+}
+
+.posted-item {
+    background: white;
+    border: 2px solid #000;
+    border-radius: 9px;
+    padding: 14px;
+    margin-top: 12px;
+}
+
+.posted-item img {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 7px;
+}
+
+.sold-button {
+    background: #a00000;
+    color: white;
+}
+
+.empty {
+    text-align: center;
+    padding: 15px;
+    color: #555;
+}
+
+.camera-button {
+    display: block;
+    text-align: center;
+    background: #111;
+    color: #d4af37;
+    padding: 15px;
+    margin-top: 8px;
+    border: 2px solid #000;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#photo { display: none; }
+</style>
+</head>
+
+<body>
+
+<header>
+    <h2>Hb Market</h2>
+    <p>Premium Seller Dashboard</p>
+</header>
+
+<div class="container">
+
+    <div class="dashboard-box hidden" id="productDashboard">
+        <h3>Your Seller Dashboard</h3>
+        <p>Your currently published products</p>
+        <div class="count" id="productCount">0</div>
+        <p>Manage your online listings below.</p>
+    </div>
+
+    <div class="card">
+        <h3>Seller Account</h3>
+
+        <div id="loginSection">
+            <p>Sign in with the email and password you used when registering as a seller.</p>
+
+            <label>Email Address</label>
+            <input type="email" id="loginEmail" placeholder="Enter your email">
+
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter your password">
+
+            <button id="loginButton">Sign In</button>
+        </div>
+
+        <div id="accountSection" class="hidden">
+            <p id="signedInEmail"></p>
+            <button id="logoutButton">Sign Out</button>
+        </div>
+
+        <div id="subscriptionStatus" class="status">
+            Connecting to Firebase...
+        </div>
+    </div>
+
+    <div class="posted-box hidden" id="manageProducts">
+        <h3>Manage Your Products</h3>
+
+        <p class="note">
+            These are your published online products. When you mark a product
+            as sold, it immediately disappears from public listings.
+            You cannot edit a published product. You will need to upload
+            a new listing if you want to advertise it again.
+        </p>
+
+        <div id="postedProducts">
+            <p class="empty">Loading your products...</p>
+        </div>
+    </div>
+
+    <div class="card hidden" id="dashboardSection">
+        <h3>Upload Your Product</h3>
+
+        <p class="note">
+            Your Premium subscription is active.
+            Sellers can publish a maximum of 10 products per day.
+        </p>
+
+        <form id="productForm">
+
+            <label>Seller Full Name</label>
+            <input type="text" id="sellerName"
+            placeholder="Enter your full name" required>
+
+            <label>WhatsApp Number (include country code)</label>
+            <input type="tel" id="whatsapp"
+            placeholder="e.g. 2348012345678" required>
+
+            <label>Product Name</label>
+            <input type="text" id="productName"
+            placeholder="Enter product name" required>
+
+            <label>Product Category</label>
+            <select id="category" required>
+                <option value="">Choose category</option>
+                <option>Clothing</option>
+                <option>Accessories</option>
+                <option>Artwork</option>
+                <option>Food</option>
+                <option>Electronics</option>
+                <option>Other Products</option>
+            </select>
+
+            <label>Product Description</label>
+            <textarea id="description"
+            placeholder="Describe your product..." required></textarea>
+
+            <label>Product Price (₦)</label>
+            <input type="number" id="price" min="1"
+            placeholder="Enter price" required>
+
+            <label>Product Picture</label>
+
+            <label for="photo" class="camera-button">
+                📷 Open Gallery / Camera
+            </label>
+
+            <input type="file" id="photo"
+            accept="image/jpeg,image/png,image/webp" required>
+
+            <img id="preview" alt="Product preview">
+
+            <button type="submit" id="publishButton">
+                Publish Product
+            </button>
+
+        </form>
+
+        <div id="publishStatus" class="status hidden"></div>
+    </div>
+
+    <a class="back" href="index.html">← Back to Home</a>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut
+} from
+"https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    where
+} from
+"https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBC2TLysSFPdomHHew59uMXQ58MQMm7PNE",
+    authDomain: "hb-market-2.firebaseapp.com",
+    projectId: "hb-market-2",
+    storageBucket: "hb-market-2.firebasestorage.app",
+    messagingSenderId: "288865400772",
+    appId: "1:288865400772:web:98119250477d3846621691"
+};
+
+
+// CURRENT SUPABASE PROJECT
+
+const supabaseUrl =
+"https://bwiuaovtrrsgoewrnkkp.supabase.co";
+
+const supabasePublishableKey =
+"sb_publishable_T1HPez6suVsszTQ3b7Tjvw_DM464C3R";
+
+const uploadFunctionURL =
+supabaseUrl + "/functions/v1/swift-task";
+
+const markSoldFunctionURL =
+supabaseUrl + "/functions/v1/mark-product-sold";
+
+const productsRESTURL =
+supabaseUrl + "/rest/v1/products";
+
+
+// FIREBASE CONNECTION
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
+const loginSection = document.getElementById("loginSection");
+const accountSection = document.getElementById("accountSection");
+const dashboardSection = document.getElementById("dashboardSection");
+const subscriptionStatus = document.getElementById("subscriptionStatus");
+
+let uploadedProducts = [];
+let currentUser = null;
+
+
+function showStatus(message) {
+    subscriptionStatus.textContent = message;
+}
+
+
+// LOAD THE SELLER'S PUBLISHED PRODUCTS FROM SUPABASE
+
+async function loadMyProducts(user) {
+
+    const container = document.getElementById("postedProducts");
+
+    container.innerHTML =
+        '<p class="empty">Loading your online products...</p>';
+
+    try {
+
+        const token = await user.getIdToken();
+
+        const url = productsRESTURL +
+            "?select=id,name,category,price,image_url,created_at" +
+            "&seller_id=eq." + encodeURIComponent(user.uid) +
+            "&status=eq.published" +
+            "&order=created_at.desc";
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "apikey": supabasePublishableKey,
+                "Authorization": "Bearer " + supabasePublishableKey
+            }
+        });
+
+        const result = await response.json().catch(() => []);
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || result.error || "Could not load your products."
+            );
+        }
+
+        uploadedProducts = Array.isArray(result) ? result : [];
+
+        updateProductDashboard();
+
+    } catch (error) {
+
+        console.error("Product loading error:", error);
+
+        container.innerHTML = "";
+
+        const message = document.createElement("p");
+        message.className = "empty";
+        message.textContent = "Could not load products: " + error.message;
+
+        container.appendChild(message);
+
+    }
+}
+
+
+// DISPLAY PRODUCTS
+
+function updateProductDashboard() {
+
+    document.getElementById("productCount").textContent =
+        uploadedProducts.length;
+
+    const container = document.getElementById("postedProducts");
+
+    container.innerHTML = "";
+
+    if (uploadedProducts.length === 0) {
+        container.innerHTML =
+            '<p class="empty">You have no currently published products.</p>';
+        return;
+    }
+
+    uploadedProducts.forEach(function(product) {
+
+        const item = document.createElement("div");
+        item.className = "posted-item";
+
+        const heading = document.createElement("h3");
+        heading.textContent = product.name;
+        item.appendChild(heading);
+
+        if (product.image_url) {
+            const image = document.createElement("img");
+            image.src = product.image_url;
+            image.alt = "Product picture";
+            item.appendChild(image);
+        }
+
+        const details = document.createElement("p");
+        details.textContent =
+            product.category + " | ₦" +
+            Number(product.price).toLocaleString("en-NG");
+
+        item.appendChild(details);
+
+        const soldButton = document.createElement("button");
+        soldButton.className = "sold-button";
+        soldButton.textContent = "Mark as Sold";
+
+        soldButton.addEventListener("click", async function() {
+
+            if (!currentUser) {
+                alert("Please sign in again.");
+                return;
+            }
+
+            const confirmed = confirm(
+                "Are you sure you want to mark this product as sold? " +
+                "It will disappear from the public listings immediately."
+            );
+
+            if (!confirmed) return;
+
+            soldButton.disabled = true;
+            soldButton.textContent = "Updating...";
+
+            try {
+
+                const firebaseToken = await currentUser.getIdToken(true);
+
+                const response = await fetch(markSoldFunctionURL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": supabasePublishableKey,
+                        "Authorization": "Bearer " + firebaseToken
+                    },
+                    body: JSON.stringify({
+                        productId: product.id
+                    })
+                });
+
+                const result = await response.json().catch(() => ({}));
+
+                if (!response.ok || result.success !== true) {
+                    throw new Error(
+                        result.error || "Could not mark this product as sold."
+                    );
+                }
+
+                alert(
+                    "Product marked as sold. It has been removed from public listings."
+                );
+
+                await loadMyProducts(currentUser);
+
+            } catch (error) {
+
+                alert("Update failed: " + error.message);
+                soldButton.disabled = false;
+                soldButton.textContent = "Mark as Sold";
+
+            }
+
+        });
+
+        item.appendChild(soldButton);
+        container.appendChild(item);
+
+    });
+
+}
+
+
+// SELLER SIGN IN
+
+document.getElementById("loginButton").addEventListener("click", async () => {
+
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    if (!email || !password) {
+        alert("Enter your email and password.");
+        return;
+    }
+
+    try {
+        showStatus("Signing in...");
+        await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+        showStatus("Sign-in failed: " + error.message);
+    }
+
+});
+
+
+// SELLER SIGN OUT
+
+document.getElementById("logoutButton").addEventListener("click", async () => {
+    await signOut(auth);
+});
+
+
+// CHECK SELLER SUBSCRIPTION
+
+onAuthStateChanged(auth, async (user) => {
+
+    currentUser = user;
+
+    dashboardSection.classList.add("hidden");
+    document.getElementById("productDashboard").classList.add("hidden");
+    document.getElementById("manageProducts").classList.add("hidden");
+
+    if (!user) {
+
+        uploadedProducts = [];
+        updateProductDashboard();
+
+        loginSection.classList.remove("hidden");
+        accountSection.classList.add("hidden");
+
+        showStatus("Please sign in to check your Premium subscription.");
+        return;
+
+    }
+
+    loginSection.classList.add("hidden");
+    accountSection.classList.remove("hidden");
+
+    document.getElementById("signedInEmail").textContent =
+        "Signed in as: " + user.email;
+
+    showStatus("Checking your subscription...");
+
+    try {
+
+        const subscriptionQuery = query(
+            collection(db, "subscriptions"),
+            where("userId", "==", user.uid)
+        );
+
+        const result = await getDocs(subscriptionQuery);
+
+        let activeSubscription = null;
+        let pendingSubscription = false;
+        const now = new Date();
+
+        result.forEach((documentSnapshot) => {
+
+            const data = documentSnapshot.data();
+
+            if (data.status === "pending") {
+                pendingSubscription = true;
+            }
+
+            if (data.status === "approved" && data.expiresAt) {
+
+                const expiryDate = data.expiresAt.toDate();
+
+                if (expiryDate > now) {
+
+                    if (
+                        !activeSubscription ||
+                        expiryDate > activeSubscription.expiryDate
+                    ) {
+                        activeSubscription = {
+                            planName: data.planName || data.plan || "Premium",
+                            expiryDate: expiryDate
+                        };
+                    }
+
+                }
+
+            }
+
+        });
+
+
+        if (activeSubscription) {
+
+            showStatus(
+                "Premium Active! Your subscription expires on " +
+                activeSubscription.expiryDate.toLocaleDateString("en-NG")
+            );
+
+            dashboardSection.classList.remove("hidden");
+            document.getElementById("productDashboard").classList.remove("hidden");
+            document.getElementById("manageProducts").classList.remove("hidden");
+
+            await loadMyProducts(user);
+
+        } else if (pendingSubscription) {
+
+            showStatus(
+                "Your payment is still pending approval. " +
+                "Your Premium dashboard will unlock after the admin approves it."
+            );
+
+        } else {
+
+            showStatus(
+                "No active Premium subscription was found. " +
+                "Please register and submit your subscription payment."
+            );
+
+        }
+
+    } catch (error) {
+
+        showStatus(
+            "Could not check your subscription. Please try again. " +
+            error.message
+        );
+
+    }
+
+});
+
+
+// PRODUCT IMAGE PREVIEW
+
+document.getElementById("photo").addEventListener("change", function() {
+
+    const file = this.files[0];
+    const preview = document.getElementById("preview");
+
+    if (file) {
+
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            alert("Please select a JPG, PNG or WEBP picture.");
+            this.value = "";
+            preview.removeAttribute("src");
+            preview.style.display = "none";
+            return;
+        }
+
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+
+    } else {
+
+        preview.removeAttribute("src");
+        preview.style.display = "none";
+
+    }
+
+});
+
+
+// CONVERT IMAGE TO BASE64 - UPDATED
+
+async function fileToBase64(file) {
+
+    if (!file || file.size === 0) {
+        throw new Error("The selected picture is empty or unavailable.");
+    }
+
+    // First attempt: ArrayBuffer
+    try {
+
+        if (typeof file.arrayBuffer === "function") {
+
+            const buffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+
+            let binary = "";
+            const chunkSize = 8192;
+
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+
+                const chunk = bytes.subarray(
+                    i,
+                    Math.min(i + chunkSize, bytes.length)
+                );
+
+                binary += String.fromCharCode(...chunk);
+            }
+
+            return btoa(binary);
+        }
+
+    } catch (error) {
+
+        console.warn("ArrayBuffer reading failed. Trying FileReader.", error);
+
+    }
+
+    // Fallback: FileReader
+
+    return await new Promise((resolve, reject) => {
+
+        const reader = new FileReader();
+
+        reader.onload = function() {
+
+            const result = String(reader.result);
+            const base64 = result.split(",")[1];
+
+            if (!base64) {
+                reject(new Error("Could not convert the picture."));
+                return;
+            }
+
+            resolve(base64);
+
+        };
+
+        reader.onerror = function() {
+
+            reject(new Error(
+                "Your browser could not access the selected picture. Try another picture."
+            ));
+
+        };
+
+        reader.onabort = function() {
+
+            reject(new Error("Picture reading was interrupted."));
+
+        };
+
+        try {
+
+            reader.readAsDataURL(file);
+
+        } catch (error) {
+
+            reject(new Error(
+                "Could not open the selected picture: " + error.message
+            ));
+
+        }
+
+    });
+
+}
+
+
+// PUBLISH PRODUCT THROUGH SECURE EDGE FUNCTION
+
+document.getElementById("productForm").addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    if (!auth.currentUser) {
+        alert("Please sign in first.");
+        return;
+    }
+
+    const user = auth.currentUser;
+
+    const seller = document.getElementById("sellerName").value.trim();
+    const whatsapp = document.getElementById("whatsapp").value.trim();
+    const name = document.getElementById("productName").value.trim();
+    const category = document.getElementById("category").value;
+    const description = document.getElementById("description").value.trim();
+    const price = Number(document.getElementById("price").value);
+    const photo = document.getElementById("photo").files[0];
+
+    const publishButton = document.getElementById("publishButton");
+    const publishStatus = document.getElementById("publishStatus");
+
+    if (!/^[0-9+\s()-]{7,20}$/.test(whatsapp)) {
+        alert("Please enter a valid WhatsApp number.");
+        return;
+    }
+
+    if (!Number.isFinite(price) || price <= 0) {
+        alert("Please enter a valid product price.");
+        return;
+    }
+
+    if (!photo) {
+        alert("Please select a product picture.");
+        return;
+    }
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(photo.type)) {
+        alert("Please select a JPG, PNG or WEBP picture.");
+        return;
+    }
+
+    if (photo.size > 5 * 1024 * 1024) {
+        alert("Picture must not exceed 5MB.");
+        return;
+    }
+
+    try {
+
+        publishButton.disabled = true;
+        publishButton.textContent = "Preparing Picture...";
+
+        publishStatus.classList.remove("hidden");
+        publishStatus.style.background = "#fff4d6";
+        publishStatus.textContent = "Preparing your product picture...";
+
+        const fileBase64 = await fileToBase64(photo);
+
+        publishButton.textContent = "Verifying Seller...";
+        publishStatus.textContent =
+            "Verifying your seller account and subscription...";
+
+        const firebaseToken = await user.getIdToken(true);
+
+        publishButton.textContent = "Uploading Product...";
+        publishStatus.textContent =
+            "Uploading your picture and publishing your product. Please wait...";
+
+        const response = await fetch(uploadFunctionURL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json",
+                "apikey": supabasePublishableKey,
+                "Authorization": "Bearer " + firebaseToken
+            },
+
+            body: JSON.stringify({
+                sellerName: seller,
+                whatsapp: whatsapp,
+                name: name,
+                category: category,
+                description: description,
+                price: price,
+                fileName: photo.name,
+                fileType: photo.type,
+                fileBase64: fileBase64
+            })
+
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok || result.success !== true) {
+            throw new Error(
+                result.error ||
+                result.message ||
+                "Product upload failed. Please try again."
+            );
+        }
+
+        publishStatus.textContent =
+            "Product successfully published under " + category + "!";
+
+        publishStatus.style.background = "#d9f7df";
+
+        document.getElementById("productForm").reset();
+
+        document.getElementById("preview").removeAttribute("src");
+        document.getElementById("preview").style.display = "none";
+
+        await loadMyProducts(user);
+
+    } catch (error) {
+
+        console.error(error);
+
+        publishStatus.textContent =
+            "Upload failed: " + error.message;
+
+        publishStatus.style.background = "#ffe0e0";
+
+    } finally {
+
+        publishButton.disabled = false;
+        publishButton.textContent = "Publish Product";
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

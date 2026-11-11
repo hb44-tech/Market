@@ -1,0 +1,510 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hb Market - Premium Registration</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f4f8;
+  color: #222;
+}
+
+header {
+  background: #111;
+  color: white;
+  padding: 25px 15px;
+  text-align: center;
+}
+
+.container {
+  max-width: 700px;
+  margin: 25px auto;
+  padding: 15px;
+}
+
+.card {
+  background: white;
+  padding: 23px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px #0001;
+}
+
+h2, h3 { margin-top: 0; }
+
+.plan {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 15px;
+}
+
+.price {
+  color: #138b48;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 8px;
+  background: #111;
+  color: white;
+  font-size: 16px;
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .5;
+}
+
+input, select {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  margin: 8px 0 15px;
+  font-size: 15px;
+}
+
+label {
+  font-weight: bold;
+}
+
+.note {
+  background: #fff4d6;
+  padding: 14px;
+  border-radius: 8px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.bank {
+  background: #eef8f0;
+  padding: 16px;
+  border-radius: 10px;
+  line-height: 2;
+  margin-top: 15px;
+}
+
+.hidden { display: none; }
+
+.back {
+  display: inline-block;
+  margin-top: 15px;
+  color: #111;
+}
+
+#message {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Hb Market</h1>
+  <p>Normal Premium Seller Registration</p>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>Become a Premium Seller</h2>
+
+    <p>
+      Register as a product seller and advertise your
+      physical products on Hb Market.
+    </p>
+
+    <h3>Your Premium Benefits</h3>
+
+    <ul>
+      <li>Post up to 10 products per day.</li>
+      <li>Upload product pictures.</li>
+      <li>Display product descriptions and prices.</li>
+      <li>Receive customer enquiries through WhatsApp.</li>
+      <li>Manage your product advertisements.</li>
+      <li>No extra payment for individual products or pictures.</li>
+    </ul>
+
+    <p>
+      <b>Important:</b> Normal Premium is for physical
+      products only. Service providers need Mega Premium.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Choose Your Premium Plan</h2>
+
+    <div class="plan">
+      <h3>Monthly Premium</h3>
+      <p class="price">₦2,000</p>
+      <p>Valid for 30 days.</p>
+      <button onclick="choosePlan('monthly')">
+        Choose Monthly
+      </button>
+    </div>
+
+    <div class="plan">
+      <h3>Yearly Premium</h3>
+      <p class="price">₦20,000</p>
+      <p>Valid for 365 days.</p>
+      <button onclick="choosePlan('yearly')">
+        Choose Yearly
+      </button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="registration">
+    <h2>Seller Registration</h2>
+
+    <label>Full Name</label>
+    <input id="name" type="text" placeholder="Enter your full name">
+
+    <label>WhatsApp Number</label>
+    <input id="phone" type="tel" placeholder="Enter WhatsApp number">
+
+    <label>Business Name</label>
+    <input id="business" type="text" placeholder="Enter business name">
+
+    <label>State</label>
+    <select id="state">
+      <option value="">Choose your state</option>
+    </select>
+
+    <label>City / LGA</label>
+    <input id="area" type="text" placeholder="Enter your city or LGA">
+
+    <label>Email Address</label>
+    <input id="email" type="email" placeholder="Enter your email">
+
+    <label>Create Password</label>
+    <input id="password" type="password"
+           placeholder="Create a password (at least 6 characters)">
+
+    <p id="chosen" class="note"></p>
+
+    <button id="registerButton" onclick="registerSeller()">
+      Create Seller Account
+    </button>
+
+    <p id="message"></p>
+  </div>
+
+  <div class="card hidden" id="payment">
+    <h2>Complete Your Payment</h2>
+
+    <p>
+      Transfer the exact amount for your selected Premium plan
+      to the account below.
+    </p>
+
+    <div class="bank">
+      <b>Bank:</b> OPay<br>
+      <b>Account Number:</b> 9028145411<br>
+      <b>Account Name:</b> OLADUNNI OLAYEMI OKANLAWON
+    </div>
+
+    <p class="note">
+      After transferring, enter the payment reference from
+      your transaction receipt below.
+
+      Your Premium membership will remain pending until the
+      administrator personally verifies and approves your payment.
+    </p>
+
+    <label>Transaction Number</label>
+<input id="transactionNumber"
+       type="text"
+       placeholder="Enter your OPay transaction number"
+       required>
+
+    <button id="paymentButton" onclick="submitPayment()">
+      Submit Payment Reference
+    </button>
+
+    <p id="paymentMessage"></p>
+  </div>
+
+  <div class="card">
+    <p class="note">
+      Never share your bank PIN, password or OTP with anyone.
+      Submitting a payment reference does not automatically activate premium it has to be approved by the admin first 
+      
+      
+    </p>
+
+    <a class="back" href="index.html">← Back to Home</a>
+  </div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+import {
+  getAuth,
+  createUserWithEmailAndPassword
+}
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  addDoc,
+  collection,
+  serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBC2TLysSFPdomHHew59uMXQ58MQMm7PNE",
+  authDomain: "hb-market-2.firebaseapp.com",
+  projectId: "hb-market-2",
+  storageBucket: "hb-market-2.firebasestorage.app",
+  messagingSenderId: "288865400772",
+  appId: "1:288865400772:web:98119250477d3846621691"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
+let selectedPlan = "";
+let currentUser = null;
+let registrationData = null;
+
+const plans = {
+  monthly: {
+    name: "Monthly Premium",
+    price: 2000,
+    days: 30
+  },
+  yearly: {
+    name: "Yearly Premium",
+    price: 20000,
+    days: 365
+  }
+};
+
+
+const states = [
+"Abia","Adamawa","Akwa Ibom","Anambra","Bauchi",
+"Bayelsa","Benue","Borno","Cross River","Delta",
+"Ebonyi","Edo","Ekiti","Enugu","FCT","Gombe",
+"Imo","Jigawa","Kaduna","Kano","Katsina","Kebbi",
+"Kogi","Kwara","Lagos","Nasarawa","Niger","Ogun",
+"Ondo","Osun","Oyo","Plateau","Rivers","Sokoto",
+"Taraba","Yobe","Zamfara"
+];
+
+const stateSelect = document.getElementById("state");
+
+states.forEach(state => {
+  const option = document.createElement("option");
+  option.value = state;
+  option.textContent = state;
+  stateSelect.appendChild(option);
+});
+
+
+function showMessage(id, message) {
+  document.getElementById(id).textContent = message;
+}
+
+
+window.choosePlan = function(plan) {
+
+  selectedPlan = plan;
+
+  document.getElementById("registration")
+    .classList.remove("hidden");
+
+  document.getElementById("chosen").textContent =
+    "Selected plan: " + plans[plan].name +
+    " — ₦" + plans[plan].price.toLocaleString() +
+    " (" + plans[plan].days + " days)";
+
+  document.getElementById("registration")
+    .scrollIntoView({ behavior: "smooth" });
+};
+
+
+window.registerSeller = async function() {
+
+  if (!selectedPlan) {
+    alert("Please select a Premium plan.");
+    return;
+  }
+
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const business = document.getElementById("business").value.trim();
+  const state = document.getElementById("state").value;
+  const area = document.getElementById("area").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if (!name || !phone || !business || !state ||
+      !area || !email || !password) {
+    alert("Please complete all registration fields.");
+    return;
+  }
+
+  if (password.length < 6) {
+    alert("Password must contain at least 6 characters.");
+    return;
+  }
+
+  const button = document.getElementById("registerButton");
+  button.disabled = true;
+  button.textContent = "Creating account...";
+
+  try {
+
+    const result = await createUserWithEmailAndPassword(
+      auth, email, password
+    );
+
+    currentUser = result.user;
+
+    registrationData = {
+      fullName: name,
+      phone: phone,
+      businessName: business,
+      state: state,
+      area: area,
+      email: email
+    };
+
+    await setDoc(doc(db, "users", currentUser.uid), {
+      ...registrationData,
+      role: "seller",
+      createdAt: serverTimestamp()
+    });
+
+    document.getElementById("payment")
+      .classList.remove("hidden");
+
+    document.getElementById("payment")
+      .scrollIntoView({ behavior: "smooth" });
+
+    showMessage(
+      "message",
+      "Your seller account has been created successfully. Now complete your payment."
+    );
+
+    button.textContent = "Account Created";
+
+  } catch (error) {
+
+    console.error(error);
+
+    showMessage(
+      "message",
+      "Registration failed: " + error.message
+    );
+
+    button.disabled = false;
+    button.textContent = "Create Seller Account";
+  }
+};
+
+
+window.submitPayment = async function() {
+
+  if (!currentUser || !registrationData) {
+    showMessage(
+      "paymentMessage",
+      "Please create your seller account first."
+    );
+    return;
+  }
+
+  const reference = document
+    .getElementById("transactionNumber")
+    .value.trim();
+
+  if (!reference) {
+    alert("Enter your payment reference.");
+    return;
+  }
+
+  const button = document.getElementById("paymentButton");
+  button.disabled = true;
+  button.textContent = "Submitting...";
+
+  try {
+
+    const plan = plans[selectedPlan];
+
+    await addDoc(collection(db, "subscriptions"), {
+
+      userId: currentUser.uid,
+
+      sellerName: registrationData.fullName,
+      email: registrationData.email,
+      businessName: registrationData.businessName,
+      phone: registrationData.phone,
+      state: registrationData.state,
+      area: registrationData.area,
+
+      plan: selectedPlan,
+      planName: plan.name,
+      price: plan.price,
+      durationDays: plan.days,
+
+      paymentMethod: "OPay Bank Transfer",
+      transactionNumber: reference,
+
+      status: "pending",
+      createdAt: serverTimestamp()
+
+    });
+
+    showMessage(
+      "paymentMessage",
+      "Payment reference submitted successfully. Your membership is PENDING. Only the Hb Market administrator can approve it after verifying the transfer."
+    );
+
+    button.textContent = "Reference Submitted";
+
+      document.getElementById("transactionNumber").disabled = true;
+
+  } catch (error) {
+
+    console.error(error);
+
+    showMessage(
+      "paymentMessage",
+      "Submission failed: " + error.message
+    );
+
+    button.disabled = false;
+    button.textContent = "Submit Payment Reference";
+  }
+};
+
+</script>
+
+</body>
+</html>
+

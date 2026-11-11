@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mega Premium Login - Hb Market</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f4f8;
+  color: #222;
+}
+
+header {
+  background: #111;
+  color: white;
+  text-align: center;
+  padding: 22px;
+}
+
+.container {
+  max-width: 450px;
+  margin: 50px auto;
+  padding: 15px;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px #0001;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 18px;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 22px;
+  background: #111;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-size: 16px;
+}
+
+button:disabled {
+  opacity: 0.6;
+}
+
+#message {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.back {
+  display: inline-block;
+  margin-top: 18px;
+  color: #111;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Hb Market</h2>
+  <p>Mega Premium Login</p>
+</header>
+
+<div class="container">
+
+  <div class="card">
+
+    <h2>Welcome Back</h2>
+
+    <p>Sign in to continue to your Mega Premium dashboard.</p>
+
+    <form id="loginForm">
+
+      <label>Email Address</label>
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter your registered email"
+        required
+      >
+
+      <label>Password</label>
+      <input
+        type="password"
+        id="password"
+        placeholder="Enter your password"
+        required
+      >
+
+      <button type="submit" id="loginButton">
+        Sign In
+      </button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <a class="back" href="megaregistration.html">
+      ← Back
+    </a>
+
+  </div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut
+}
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs
+}
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBC2TLysSFPdomHHew59uMXQ58MQMm7PNE",
+  authDomain: "hb-market-2.firebaseapp.com",
+  projectId: "hb-market-2",
+  storageBucket: "hb-market-2.firebasestorage.app",
+  messagingSenderId: "288865400772",
+  appId: "1:288865400772:web:98119250477d3846621691"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+document.getElementById("loginForm")
+.addEventListener("submit", async function(event) {
+
+  event.preventDefault();
+
+  const email =
+    document.getElementById("email").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  const button =
+    document.getElementById("loginButton");
+
+  const message =
+    document.getElementById("message");
+
+  button.disabled = true;
+  button.textContent = "Checking account...";
+  message.textContent = "";
+
+  try {
+
+    // STEP 1: VERIFY FIREBASE ACCOUNT
+
+    const userCredential =
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+    const user = userCredential.user;
+
+    // STEP 2: FIND APPROVED SUBSCRIPTIONS
+    // belonging to this exact account.
+
+    const subscriptionQuery = query(
+      collection(db, "subscriptions"),
+      where("userId", "==", user.uid),
+      where("status", "==", "approved")
+    );
+
+    const snapshot =
+      await getDocs(subscriptionQuery);
+
+    const now = new Date();
+
+    // STEP 3: CHECK FOR ACTIVE MEGA PREMIUM
+
+    let validMegaSubscription = false;
+
+    snapshot.forEach((doc) => {
+
+      const data = doc.data();
+
+      const planDetails =
+        (
+          String(data.plan || "") + " " +
+          String(data.planName || "")
+        ).toLowerCase();
+
+      const isMegaPremium =
+        planDetails.includes("mega");
+
+      const hasExpiry =
+        data.expiresAt &&
+        typeof data.expiresAt.toDate === "function";
+
+      const isNotExpired =
+        hasExpiry &&
+        data.expiresAt.toDate() > now;
+
+      if (isMegaPremium && isNotExpired) {
+        validMegaSubscription = true;
+      }
+
+    });
+
+    // STEP 4: BLOCK UNPAID OR EXPIRED ACCOUNTS
+
+    if (!validMegaSubscription) {
+
+      await signOut(auth);
+
+      message.textContent =
+        "Access denied. You need an approved and active Mega Premium subscription to enter this dashboard.";
+
+      button.disabled = false;
+      button.textContent = "Sign In";
+
+      return;
+    }
+
+    // STEP 5: ALLOW APPROVED MEGA PREMIUM USERS
+
+    message.textContent =
+      "Subscription verified. Opening dashboard...";
+
+    window.location.href =
+      "mega registration dashboard.html";
+
+  } catch (error) {
+
+    console.error(error);
+
+    if (auth.currentUser) {
+      await signOut(auth);
+    }
+
+    message.textContent =
+      "Login or subscription verification failed. Check your details or contact Hb Market support.";
+
+    button.disabled = false;
+    button.textContent = "Sign In";
+
+  }
+
+});
+
+</script>
+
+</body>
+</html>

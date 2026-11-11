@@ -1,0 +1,573 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mega Premium Registration - Hb Market</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f4f8;
+  color: #222;
+}
+
+header {
+  background: #111;
+  color: white;
+  padding: 22px;
+  text-align: center;
+}
+
+.container {
+  max-width: 650px;
+  margin: 25px auto;
+  padding: 15px;
+}
+
+.card {
+  background: white;
+  padding: 22px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 12px #0001;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 14px;
+}
+
+input, select {
+  width: 100%;
+  padding: 13px;
+  margin-top: 7px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  font-size: 15px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 7px;
+  background: #111;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .5;
+}
+
+.note {
+  background: #fff4d6;
+  padding: 13px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.bank {
+  background: #eef8f0;
+  padding: 15px;
+  border-radius: 9px;
+  line-height: 2;
+  overflow-wrap: anywhere;
+}
+
+.hidden { display: none; }
+
+#message, #paymentMessage {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.back {
+  color: #111;
+  display: inline-block;
+  margin-top: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Hb Market</h2>
+  <p>Mega Premium Registration</p>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>Service Provider Membership</h2>
+
+    <p class="note" id="planDetails">
+      Loading your selected Mega Premium plan...
+    </p>
+
+    <p>
+      Mega Premium allows service providers to advertise their
+      services, display pictures, show their location and receive
+      customer enquiries through WhatsApp.
+    </p>
+  </div>
+
+  <div class="card" id="accountCard">
+
+    <h2>Account Details</h2>
+
+    <p class="note">
+      If you already have an Hb Market account, sign in using
+      the same email and password. Do not create another account.
+    </p>
+
+    <button type="button" onclick="setMode('register')">
+      Create New Account
+    </button>
+
+   
+
+    <p id="modeText"><b>Create a new account</b></p>
+
+    <form id="accountForm">
+
+      <label>Full Name</label>
+      <input id="name" type="text" placeholder="Enter your full name" required>
+
+      <label>WhatsApp Number</label>
+      <input id="phone" type="tel" placeholder="Enter WhatsApp number" required>
+
+      <label>Business / Service Name</label>
+      <input id="business" type="text" placeholder="Enter your service name" required>
+
+      <label>State</label>
+      <select id="state" required>
+        <option value="">Choose your state</option>
+      </select>
+
+      <label>City / LGA / Area</label>
+      <input id="area" type="text" placeholder="Enter your area" required>
+
+      <label>Email Address</label>
+      <input id="email" type="email" placeholder="Enter your email" required>
+
+      <label>Password</label>
+      <input id="password" type="password"
+             placeholder="Enter your password" required>
+
+      <button id="accountButton" type="submit">
+        Create Mega Premium Account
+      </button>
+
+    </form>
+
+    <p id="message"></p>
+  </div>
+
+  <div class="card hidden" id="paymentCard">
+
+    <h2>Make Your Payment</h2>
+
+    <p id="paymentPlan"></p>
+
+    <div class="bank">
+      <b>Bank:</b> OPay<br>
+      <b>Account Number:</b> 9028145411<br>
+      <b>Account Name:</b> OLADUNNI OLAYEMI OKANLAWON
+    </div>
+
+    <p class="note">
+      Transfer the exact amount shown above. Then enter your
+      transaction reference below.
+
+      Your Mega Premium subscription will remain pending until
+      the Hb Market Admin verifies and approves your payment.
+
+      Your subscription period starts from the approval date.
+    </p>
+
+    <label>OPay Transaction Reference</label>
+    <input id="transactionNumber" type="text"
+           placeholder="Enter your transaction reference" required>
+
+    <button id="paymentButton" onclick="submitPayment()">
+      Submit Payment Reference
+    </button>
+
+    <p id="paymentMessage"></p>
+  </div>
+
+  <div class="card">
+    <p class="note">
+      Never share your bank PIN, password or OTP.
+      Payment submission does not automatically activate your
+      membership. Admin approval is required.
+    </p>
+
+    <a class="back" href="services.html">← Back to Services</a>
+  </div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+}
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  addDoc,
+  collection,
+  serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBC2TLysSFPdomHHew59uMXQ58MQMm7PNE",
+  authDomain: "hb-market-2.firebaseapp.com",
+  projectId: "hb-market-2",
+  storageBucket: "hb-market-2.firebasestorage.app",
+  messagingSenderId: "288865400772",
+  appId: "1:288865400772:web:98119250477d3846621691"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
+// Mega Premium prices are determined here,
+// not by trusting the browser's saved amount.
+
+const plans = {
+  monthly: {
+    name: "Monthly Mega Premium",
+    price: 5000,
+    days: 30
+  },
+  yearly: {
+    name: "Yearly Mega Premium",
+    price: 50000,
+    days: 365
+  }
+};
+
+let selectedPlan = "";
+let currentUser = null;
+let registrationData = null;
+let mode = "register";
+let accountReady = false;
+
+const states = [
+"Abia","Adamawa","Akwa Ibom","Anambra","Bauchi",
+"Bayelsa","Benue","Borno","Cross River","Delta",
+"Ebonyi","Edo","Ekiti","Enugu","FCT","Gombe",
+"Imo","Jigawa","Kaduna","Kano","Katsina","Kebbi",
+"Kogi","Kwara","Lagos","Nasarawa","Niger","Ogun",
+"Ondo","Osun","Oyo","Plateau","Rivers","Sokoto",
+"Taraba","Yobe","Zamfara"
+];
+
+const stateSelect = document.getElementById("state");
+
+states.forEach(state => {
+  const option = document.createElement("option");
+  option.value = state;
+  option.textContent = state;
+  stateSelect.appendChild(option);
+});
+
+
+// Read the plan selected on the previous page.
+
+try {
+  const savedPlan = JSON.parse(
+    localStorage.getItem("hbMegaPlan") || "null"
+  );
+
+  if (savedPlan && plans[savedPlan.plan]) {
+    selectedPlan = savedPlan.plan;
+  }
+} catch (error) {
+  selectedPlan = "";
+}
+
+const planDetails = document.getElementById("planDetails");
+
+if (selectedPlan) {
+  const plan = plans[selectedPlan];
+
+  planDetails.textContent =
+    plan.name + " — ₦" +
+    plan.price.toLocaleString("en-NG") +
+    " — Valid for " + plan.days + " days after approval.";
+} else {
+  planDetails.textContent =
+    "No Mega Premium plan was selected. Please return to the Mega Premium page and choose a plan.";
+  document.getElementById("accountForm").querySelector("button").disabled = true;
+}
+
+function showMessage(id, message) {
+  document.getElementById(id).textContent = message;
+}
+
+window.setMode = function(newMode) {
+  mode = newMode;
+
+  accountReady = false;
+  currentUser = null;
+  registrationData = null;
+
+  document.getElementById("paymentCard").classList.add("hidden");
+  document.getElementById("message").textContent = "";
+
+  const nameFields = [
+    "name", "phone", "business", "state", "area"
+  ];
+
+  nameFields.forEach(id => {
+    document.getElementById(id).disabled = mode === "login";
+  });
+
+  document.getElementById("modeText").textContent =
+    mode === "login"
+      ? "Sign in to your existing Hb Market account"
+      : "Create a new Hb Market account";
+
+  document.getElementById("accountButton").textContent =
+    mode === "login"
+      ? "Sign In"
+      : "Create Mega Premium Account";
+};
+
+
+document.getElementById("accountForm")
+.addEventListener("submit", async function(event) {
+
+  event.preventDefault();
+
+  if (!selectedPlan) {
+    showMessage("message", "Please select a Mega Premium plan first.");
+    return;
+  }
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  const button = document.getElementById("accountButton");
+
+  button.disabled = true;
+  button.textContent = "Please wait...";
+
+  try {
+
+    if (mode === "register") {
+
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const business = document.getElementById("business").value.trim();
+      const state = document.getElementById("state").value;
+      const area = document.getElementById("area").value.trim();
+
+      if (!name || !phone || !business || !state || !area) {
+        throw new Error("Please complete all your details.");
+      }
+
+      if (password.length < 6) {
+        throw new Error("Password must contain at least 6 characters.");
+      }
+
+      const result = await createUserWithEmailAndPassword(
+        auth, email, password
+      );
+
+      currentUser = result.user;
+
+      registrationData = {
+        fullName: name,
+        phone,
+        businessName: business,
+        state,
+        area,
+        email
+      };
+
+      await setDoc(doc(db, "users", currentUser.uid), {
+        ...registrationData,
+        role: "seller",
+        createdAt: serverTimestamp()
+      }, { merge: true });
+
+    } else {
+
+      const result = await signInWithEmailAndPassword(
+        auth, email, password
+      );
+
+      currentUser = result.user;
+
+      const userDoc = await getDoc(
+        doc(db, "users", currentUser.uid)
+      );
+
+      if (!userDoc.exists()) {
+        throw new Error(
+          "Your account has no Hb Market profile yet. Please contact the administrator."
+        );
+      }
+
+      const data = userDoc.data();
+
+      registrationData = {
+        fullName: data.fullName || data.sellerName || "",
+        phone: data.phone || "",
+        businessName: data.businessName || "",
+        state: data.state || "",
+        area: data.area || "",
+        email: currentUser.email
+      };
+    }
+
+    accountReady = true;
+
+    document.getElementById("paymentCard").classList.remove("hidden");
+
+    const plan = plans[selectedPlan];
+
+    document.getElementById("paymentPlan").textContent =
+      plan.name + ": ₦" +
+      plan.price.toLocaleString("en-NG") +
+      " for " + plan.days + " days.";
+
+    document.getElementById("paymentCard")
+      .scrollIntoView({ behavior: "smooth" });
+
+    showMessage(
+      "message",
+      "Account ready. You can now submit your Mega Premium payment reference."
+    );
+
+    button.textContent = "Account Ready";
+
+  } catch (error) {
+
+    console.error(error);
+
+    showMessage("message", error.message);
+
+    button.disabled = false;
+    button.textContent =
+      mode === "login" ? "Sign In" : "Create Mega Premium Account";
+  }
+
+});
+
+
+window.submitPayment = async function() {
+
+  if (!currentUser || !accountReady || !registrationData) {
+    showMessage("paymentMessage", "Please sign in or create your account first.");
+    return;
+  }
+
+  const reference = document
+    .getElementById("transactionNumber")
+    .value.trim();
+
+  if (!reference) {
+    showMessage("paymentMessage", "Please enter your transaction reference.");
+    return;
+  }
+
+  if (!selectedPlan || !plans[selectedPlan]) {
+    showMessage("paymentMessage", "Your selected plan is missing. Please return and choose again.");
+    return;
+  }
+
+  const button = document.getElementById("paymentButton");
+  button.disabled = true;
+  button.textContent = "Submitting...";
+
+  try {
+
+    const plan = plans[selectedPlan];
+
+    await addDoc(collection(db, "subscriptions"), {
+
+      userId: currentUser.uid,
+
+      // This identifies the membership as Mega Premium.
+      membershipType: "mega",
+      subscriptionType: "mega",
+      accountType: "serviceProvider",
+
+      sellerName: registrationData.fullName,
+      fullName: registrationData.fullName,
+      email: registrationData.email,
+      businessName: registrationData.businessName,
+      phone: registrationData.phone,
+      state: registrationData.state,
+      area: registrationData.area,
+
+      plan: selectedPlan,
+      planName: plan.name,
+      price: plan.price,
+      durationDays: plan.days,
+
+      paymentMethod: "OPay Bank Transfer",
+      transactionNumber: reference,
+
+      status: "pending",
+      createdAt: serverTimestamp()
+
+    });
+
+    showMessage(
+      "paymentMessage",
+      "Your Mega Premium payment reference has been submitted. Your subscription is PENDING. The administrator must verify and approve your payment before your membership becomes active."
+    );
+
+    button.textContent = "Reference Submitted";
+    document.getElementById("transactionNumber").disabled = true;
+
+  } catch (error) {
+
+    console.error(error);
+
+    showMessage(
+      "paymentMessage",
+      "Submission failed: " + error.message
+    );
+
+    button.disabled = false;
+    button.textContent = "Submit Payment Reference";
+  }
+
+};
+
+</script>
+
+</body>
+</html>

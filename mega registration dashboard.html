@@ -1,0 +1,701 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mega Premium Dashboard - Hb Market</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Arial,sans-serif;color:#222;
+  background:linear-gradient(120deg,#d4af37,#fff0a6,#e6b800,#f5f5dc,#d4af37);
+  background-size:400% 400%;animation:goldMove 12s ease infinite
+}
+@keyframes goldMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+header{
+  background:#111;color:#d4af37;padding:20px;text-align:center;
+  border-bottom:4px solid #000
+}
+header h2{margin:0}
+.container{max-width:650px;margin:25px auto;padding:20px}
+.card,.posted-box{
+  background:rgba(255,255,255,.94);padding:22px;
+  border:2px solid #000;border-radius:12px;
+  box-shadow:0 3px 12px #0002;margin-bottom:20px
+}
+.dashboard-box{
+  text-align:center;background:#111;color:#d4af37;
+  padding:22px;border:2px solid #000;border-radius:12px;
+  margin-bottom:20px
+}
+.count{font-size:38px;font-weight:bold;margin:10px 0}
+label{display:block;margin-top:15px;font-weight:bold}
+input,select,textarea{
+  width:100%;padding:13px;margin-top:7px;border:2px solid #000;
+  border-radius:7px;font-size:15px;background:white
+}
+textarea{min-height:100px}
+button{
+  width:100%;padding:14px;margin-top:20px;border:2px solid #000;
+  border-radius:7px;background:#111;color:#d4af37;
+  font-size:16px;font-weight:bold;cursor:pointer
+}
+button:disabled{opacity:.6;cursor:not-allowed}
+button:hover{background:#d4af37;color:#111}
+#preview{
+  width:100%;max-height:250px;object-fit:cover;margin-top:15px;
+  border-radius:10px;border:2px solid #000;display:none
+}
+.note{
+  background:#fff4d6;padding:12px;border:2px solid #000;
+  border-radius:8px;font-size:13px;line-height:1.5
+}
+.back{display:inline-block;margin-top:18px;color:#111;font-weight:bold}
+.posted-item{
+  border:2px solid #000;padding:14px;border-radius:9px;
+  margin-top:12px;background:white
+}
+.posted-item img{
+  width:100%;max-height:180px;object-fit:cover;border-radius:7px
+}
+.cancel-button{background:#a00000;color:white}
+.empty{text-align:center;padding:15px;color:#555}
+.camera-button{
+  display:block;text-align:center;background:#111;color:#d4af37;
+  padding:15px;margin-top:8px;border:2px solid #000;
+  border-radius:7px;cursor:pointer;font-weight:bold
+}
+#photo{display:none}
+#message{font-weight:bold;margin-top:15px;white-space:pre-wrap}
+</style>
+</head>
+
+<body>
+<header>
+  <h2>Hb Market</h2>
+  <p>Mega Premium Provider Dashboard</p>
+</header>
+
+<div class="container">
+
+  <div class="dashboard-box">
+    <h3>Your Dashboard</h3>
+    <p>Active Services Posted</p>
+    <div class="count" id="serviceCount">0</div>
+    <p>Manage your service advertisements below.</p>
+  </div>
+
+  <div class="posted-box">
+    <h3>Manage Your Posted Services</h3>
+    <p>Cancel a service when you no longer want it advertised.</p>
+    <div id="postedServices">
+      <p class="empty">Sign in to view your services.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Set Up Your Service</h3>
+
+    <p class="note">
+      Only Mega Premium providers with an approved, active subscription
+      can publish services. When you cancel a service, it disappears
+      from public listings. Its record and image are scheduled for
+      permanent deletion after seven days, provided the server-side
+      cancellation function supports this arrangement.
+    </p>
+
+    <form id="serviceForm">
+
+      <label>Full Name</label>
+      <input type="text" id="fullname" required>
+
+      <label>WhatsApp Number</label>
+      <input type="tel" id="whatsapp"
+      placeholder="e.g. 08012345678" required>
+
+      <label>State</label>
+      <select id="state" required>
+        <option value="">Select your state</option>
+      </select>
+
+      <label>LGA / City / Area</label>
+      <input type="text" id="area" required>
+
+      <label>Service Category</label>
+      <select id="category" required>
+        <option value="">Choose a service</option>
+        <option>Hair Plaiting</option>
+        <option>Plumbing</option>
+        <option>Electrical Work</option>
+        <option>Painting</option>
+        <option>Cleaning</option>
+        <option>Catering</option>
+        <option>Photography</option>
+        <option>Fashion Design</option>
+        <option>Repairs</option>
+        <option>Other Services</option>
+      </select>
+
+      <label>Service Title</label>
+      <input type="text" id="title" required>
+
+      <label>Describe Your Service</label>
+      <textarea id="description" required></textarea>
+
+      <label>Price (₦)</label>
+      <input type="number" id="price" min="0" required>
+
+      <label>Service Picture</label>
+      <label for="photo" class="camera-button">
+        📷 Open Gallery / Camera
+      </label>
+      <input type="file" id="photo"
+      accept="image/jpeg,image/png,image/webp" required>
+
+      <img id="preview" alt="Service picture preview">
+
+      <button type="submit" id="uploadButton">
+        Upload My Service
+      </button>
+    </form>
+
+    <div id="message"></div>
+    <a class="back" href="services.html">← Back to Services</a>
+  </div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBC2TLysSFPdomHHew59uMXQ58MQMm7PNE",
+  authDomain: "hb-market-2.firebaseapp.com",
+  projectId: "hb-market-2",
+  storageBucket: "hb-market-2.firebasestorage.app",
+  messagingSenderId: "288865400772",
+  appId: "1:288865400772:web:98119250477d3846621691"
+};
+
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const SUPABASE_URL =
+"https://bwiuaovtrrsgoewrnkkp.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_T1HPez6suVsszTQ3b7Tjvw_DM464C3R";
+
+
+// NEW SEPARATE SERVICE UPLOAD FUNCTION
+
+const uploadFunctionURL =
+SUPABASE_URL + "/functions/v1/upload-service-";
+
+const markSoldFunctionURL =
+SUPABASE_URL + "/functions/v1/mark-product-sold";
+
+const productsRESTURL =
+SUPABASE_URL + "/rest/v1/products";
+
+
+const states = [
+"Abia","Adamawa","Akwa Ibom","Anambra","Bauchi",
+"Bayelsa","Benue","Borno","Cross River","Delta",
+"Ebonyi","Edo","Ekiti","Enugu","Gombe","Imo",
+"Jigawa","Kaduna","Kano","Katsina","Kebbi",
+"Kogi","Kwara","Lagos","Nasarawa","Niger",
+"Ogun","Ondo","Osun","Oyo","Plateau","Rivers",
+"Sokoto","Taraba","Yobe","Zamfara",
+"Federal Capital Territory"
+];
+
+const stateSelect = document.getElementById("state");
+
+states.forEach(state => {
+  const option = document.createElement("option");
+  option.value = state;
+  option.textContent = state;
+  stateSelect.appendChild(option);
+});
+
+
+let currentUser = null;
+let services = [];
+
+const message = document.getElementById("message");
+const uploadButton = document.getElementById("uploadButton");
+
+
+function showMessage(text, error = false) {
+  message.textContent = text;
+  message.style.color = error ? "#a00000" : "#176b32";
+}
+
+
+function fileToBase64(file) {
+
+  return new Promise((resolve, reject) => {
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+
+      const result = String(reader.result);
+      const base64 = result.split(",")[1];
+
+      if (!base64) {
+        reject(new Error("Could not convert the picture."));
+        return;
+      }
+
+      resolve(base64);
+    };
+
+    reader.onerror = () => {
+      reject(new Error("Could not read the selected picture."));
+    };
+
+    reader.onabort = () => {
+      reject(new Error("Picture reading was interrupted."));
+    };
+
+    reader.readAsDataURL(file);
+
+  });
+
+}
+
+
+// CHECK LOGIN
+
+onAuthStateChanged(auth, async user => {
+
+  currentUser = user;
+
+  if (!user) {
+
+    showMessage("Please sign in to your Mega Premium account.", true);
+
+    document.getElementById("postedServices").innerHTML =
+      '<p class="empty">Please sign in first.</p>';
+
+    uploadButton.disabled = true;
+    return;
+  }
+
+  uploadButton.disabled = false;
+
+  await loadMyServices();
+
+});
+
+
+// LOAD PROVIDER SERVICES
+
+async function loadMyServices() {
+
+  if (!currentUser) return;
+
+  const container = document.getElementById("postedServices");
+
+  container.innerHTML =
+    '<p class="empty">Loading your services...</p>';
+
+  try {
+
+    const url =
+      productsRESTURL +
+      "?select=*" +
+      "&seller_id=eq." + encodeURIComponent(currentUser.uid) +
+      "&category=like.Service%3A*" +
+      "&status=eq.published" +
+      "&order=created_at.desc";
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY
+      }
+    });
+
+    const result = await response.json().catch(() => []);
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || result.error ||
+        "Could not load your services."
+      );
+    }
+
+    services = Array.isArray(result) ? result : [];
+
+    renderServices();
+
+  } catch (error) {
+
+    showMessage(error.message, true);
+
+    container.innerHTML =
+      '<p class="empty">Could not load your services.</p>';
+
+  }
+
+}
+
+
+// DISPLAY SERVICES
+
+function renderServices() {
+
+  document.getElementById("serviceCount").textContent =
+    services.length;
+
+  const container = document.getElementById("postedServices");
+
+  container.innerHTML = "";
+
+  if (!services.length) {
+
+    container.innerHTML =
+      '<p class="empty">You have no active services yet.</p>';
+
+    return;
+  }
+
+  services.forEach(service => {
+
+    const item = document.createElement("div");
+    item.className = "posted-item";
+
+    const title = document.createElement("h3");
+    title.textContent = service.name;
+    item.appendChild(title);
+
+    if (service.image_url) {
+
+      const img = document.createElement("img");
+      img.src = service.image_url;
+      img.alt = "Service picture";
+      item.appendChild(img);
+
+    }
+
+    const details = document.createElement("p");
+
+    details.textContent =
+      String(service.category || "").replace(/^Service:/, "") +
+      " | ₦" + Number(service.price).toLocaleString("en-NG");
+
+    item.appendChild(details);
+
+    const description = document.createElement("p");
+    description.textContent = service.description || "";
+
+    item.appendChild(description);
+
+    const cancel = document.createElement("button");
+    cancel.className = "cancel-button";
+    cancel.textContent = "Cancel Service";
+
+    cancel.addEventListener("click", async () => {
+
+      if (!currentUser) {
+        showMessage("Please sign in again.", true);
+        return;
+      }
+
+      if (!confirm(
+        "Cancel this service advertisement? It will disappear from public listings."
+      )) return;
+
+      cancel.disabled = true;
+      cancel.textContent = "Cancelling...";
+
+      try {
+
+        const token = await currentUser.getIdToken(true);
+
+        const result = await fetch(markSoldFunctionURL, {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token,
+            "apikey": SUPABASE_KEY
+          },
+
+          body: JSON.stringify({
+            productId: service.id
+          })
+
+        });
+
+        const data = await result.json().catch(() => ({}));
+
+        if (!result.ok || data.success !== true) {
+          throw new Error(
+            data.error || "Could not cancel service."
+          );
+        }
+
+        showMessage(
+          "Service cancelled and removed from your active listings."
+        );
+
+        await loadMyServices();
+
+      } catch (error) {
+
+        showMessage(error.message, true);
+
+        cancel.disabled = false;
+        cancel.textContent = "Cancel Service";
+
+      }
+
+    });
+
+    item.appendChild(cancel);
+    container.appendChild(item);
+
+  });
+
+}
+
+
+// IMAGE PREVIEW
+
+document.getElementById("photo").addEventListener("change", function() {
+
+  const file = this.files[0];
+  const preview = document.getElementById("preview");
+
+  if (!file) {
+    preview.style.display = "none";
+    preview.removeAttribute("src");
+    return;
+  }
+
+  if (!["image/jpeg","image/png","image/webp"].includes(file.type)) {
+
+    showMessage("Only JPG, PNG and WEBP images are allowed.", true);
+
+    this.value = "";
+    preview.style.display = "none";
+    preview.removeAttribute("src");
+
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+
+    showMessage("Picture must not exceed 5 MB.", true);
+
+    this.value = "";
+    preview.style.display = "none";
+    preview.removeAttribute("src");
+
+    return;
+  }
+
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "block";
+
+});
+
+
+// UPLOAD SERVICE USING upload-service
+
+document.getElementById("serviceForm").addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+    if (!currentUser) {
+      showMessage("Please sign in first.", true);
+      return;
+    }
+
+    const name =
+      document.getElementById("fullname").value.trim();
+
+    const whatsapp =
+      document.getElementById("whatsapp").value.trim();
+
+    const state =
+      document.getElementById("state").value;
+
+    const area =
+      document.getElementById("area").value.trim();
+
+    const category =
+      document.getElementById("category").value;
+
+    const title =
+      document.getElementById("title").value.trim();
+
+    const description =
+      document.getElementById("description").value.trim();
+
+    const price =
+      Number(document.getElementById("price").value);
+
+    const photo =
+      document.getElementById("photo").files[0];
+
+
+    if (!/^[0-9+\s()-]{7,20}$/.test(whatsapp)) {
+      showMessage("Enter a valid WhatsApp number.", true);
+      return;
+    }
+
+    if (!Number.isFinite(price) || price < 0) {
+      showMessage("Enter a valid price.", true);
+      return;
+    }
+
+    if (!photo) {
+      showMessage("Please select a service picture.", true);
+      return;
+    }
+
+    if (photo.size > 5 * 1024 * 1024) {
+      showMessage("Picture must not exceed 5 MB.", true);
+      return;
+    }
+
+    if (!["image/jpeg","image/png","image/webp"].includes(photo.type)) {
+      showMessage("Only JPG, PNG and WEBP images are allowed.", true);
+      return;
+    }
+
+
+    uploadButton.disabled = true;
+    uploadButton.textContent = "Preparing Picture...";
+
+    showMessage("Preparing your service picture...");
+
+    try {
+
+      const fileBase64 = await fileToBase64(photo);
+
+      uploadButton.textContent = "Verifying Provider...";
+
+      showMessage(
+        "Verifying your account and preparing your service..."
+      );
+
+      const token = await currentUser.getIdToken(true);
+
+      uploadButton.textContent = "Uploading Service...";
+
+      showMessage(
+        "Uploading your service. Please wait..."
+      );
+
+
+      const response = await fetch(uploadFunctionURL, {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + token
+        },
+
+        body: JSON.stringify({
+
+          listingType: "service",
+
+          sellerName: name,
+
+          whatsapp: whatsapp,
+
+          name: title,
+
+          category: "Service:" + category,
+
+          description:
+            description +
+            "\n\nService location: " + area + ", " + state,
+
+          price: price,
+
+          fileName: photo.name,
+
+          fileType: photo.type,
+
+          fileBase64: fileBase64
+
+        })
+
+      });
+
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || data.success !== true) {
+
+        throw new Error(
+          data.error ||
+          data.message ||
+          "Service upload failed. Please try again."
+        );
+
+      }
+
+
+      showMessage(
+        "Service successfully uploaded!"
+      );
+
+      document.getElementById("serviceForm").reset();
+
+      document.getElementById("preview").style.display = "none";
+      document.getElementById("preview").removeAttribute("src");
+
+      await loadMyServices();
+
+    } catch (error) {
+
+      console.error("Mega Premium upload error:", error);
+
+      showMessage(
+        "Upload failed: " + error.message,
+        true
+      );
+
+    } finally {
+
+      uploadButton.disabled = false;
+      uploadButton.textContent = "Upload My Service";
+
+    }
+
+  }
+);
+
+</script>
+</body>
+</html>
+

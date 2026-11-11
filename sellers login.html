@@ -1,0 +1,238 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hb Market - Seller Login</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f5f8;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.login-box {
+    background: white;
+    width: 100%;
+    max-width: 420px;
+    padding: 35px 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0,0,0,.1);
+}
+
+.logo {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: #d5a526;
+    margin-bottom: 20px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #777;
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    background: #e5b83e;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .6;
+}
+
+#message {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.back {
+    text-align: center;
+    margin-top: 22px;
+}
+
+.back a {
+    color: #111;
+    text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+
+    <div class="logo">HB MARKET.</div>
+
+    <h2>Seller Sign In</h2>
+
+    <p class="subtitle">
+        Sign in to access your seller dashboard.
+    </p>
+
+    <form id="loginForm">
+
+        <label>Email Address</label>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Enter your registered email"
+            required
+        >
+
+        <label>Password</label>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Enter your password"
+            required
+        >
+
+        <button type="submit" id="loginBtn">
+            Sign In
+        </button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <div class="back">
+        <a href="index.html">← Back to Hb Market</a>
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+
+// YOUR LATEST HB MARKET FIREBASE CONFIG
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBC2TLysSFPdomHHew59uMXQ58MQMm7PNE",
+    authDomain: "hb-market-2.firebaseapp.com",
+    projectId: "hb-market-2",
+    storageBucket: "hb-market-2.firebasestorage.app",
+    messagingSenderId: "288865400772",
+    appId: "1:288865400772:web:98119250477d3846621691"
+};
+
+// INITIALIZE FIREBASE
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+const form = document.getElementById("loginForm");
+const message = document.getElementById("message");
+const loginBtn = document.getElementById("loginBtn");
+
+// SELLER LOGIN
+
+form.addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Signing In...";
+
+    message.style.color = "#555";
+    message.textContent = "Verifying your account...";
+
+    try {
+
+        await auth.signInWithEmailAndPassword(email, password);
+
+        message.style.color = "green";
+        message.textContent = "Login successful! Opening dashboard...";
+
+        window.location.href = "sellers%20dashboard.html";
+
+    } catch (error) {
+
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Sign In";
+
+        message.style.color = "red";
+
+        switch(error.code) {
+
+            case "auth/invalid-credential":
+            case "auth/user-not-found":
+            case "auth/wrong-password":
+                message.textContent = "Incorrect email or password.";
+                break;
+
+            case "auth/invalid-email":
+                message.textContent = "Enter a valid email address.";
+                break;
+
+            case "auth/too-many-requests":
+                message.textContent = "Too many attempts. Please try again later.";
+                break;
+
+            case "auth/network-request-failed":
+                message.textContent = "Check your internet connection.";
+                break;
+
+            default:
+                message.textContent = "Login error: " + error.message;
+        }
+    }
+
+});
+
+</script>
+
+</body>
+</html>
